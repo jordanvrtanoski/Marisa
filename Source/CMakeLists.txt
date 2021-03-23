@@ -88,6 +88,13 @@ add_test(NAME Coverage COMMAND test_Coverage)
 add_executable(example_Hello Examples/hello.cpp)
 target_link_libraries(example_Hello marisa)
 
+find_package(Lua REQUIRED)
+
+add_executable(example_HelloLua Examples/hello_lua.cpp)
+target_link_libraries(example_HelloLua marisa)
+include_directories(example_HelloLua PRIVATE ${LUA_INCLUDE_DIR})
+target_link_libraries(example_HelloLua ${LUA_LIBRARIES})
+
 add_executable(example_HelloLambda Examples/hello_lambda.cpp)
 target_link_libraries(example_HelloLambda marisa)
 
