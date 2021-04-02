@@ -7,3 +7,6 @@
 [submodule "3rdParty/http-parser"]
 	path = Source/3rdParty/http-parser
 	url = https://github.com/nodejs/http-parser
+[submodule "Source/3rdParty/luacpp"]
+	path = Source/3rdParty/luacpp
+	url = https://github.com/jordanvrtanoski/luacpp.git

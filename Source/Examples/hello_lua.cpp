@@ -1,6 +1,7 @@
 /*
     This file is part of Marisa.
     Copyright (C) 2018-2019 ReimuNotMoe
+    Copyright (C) 2021 Jordan Vrtanoski
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as
@@ -16,18 +17,18 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifdef __cplusplus
-  extern "C" {
-    #include "lua.h"
-    #include "lualib.h"
-    #include "lauxlib.h"
-  }
-#endif //__cplusplus
-
 #include "../Marisa.hpp"
+#include <iostream>
+#include <LuaCpp.hpp>
+
+static std::string global_name = "hello";
 
 using namespace Marisa::Application;
 using namespace Middlewares;
+
+using namespace LuaCpp;
+using namespace LuaCpp::Registry;
+using namespace LuaCpp::Engine;
 
 
 class hello_world : public Middleware {
@@ -41,18 +42,28 @@ public:
 		sstr << "</head>";
 		sstr << "<body>";
 
-		lua_State* L;
-		L = luaL_newstate();
-    		lua_pushstring(L, "Iwakasa");
-		lua_setglobal(L, "name");
-		luaL_openlibs(L);
-		if (luaL_dostring(L, "name=\"Marisa from Lua Yumemi, it's \" .. os.date()" )) {
-        		sstr << "Final:" << lua_tostring(L, -1) << "\n";
-    		}
+		LuaEnvironment env;
+		std::shared_ptr<LuaTString> name = std::make_shared<LuaTString>("");
+		
+		env["name"] = name;
 
-		lua_getglobal(L, "name");
-		sstr << "<h1>Hello " << lua_tostring(L,-1) << "!</h1>";
-    		lua_close(L);
+		ctx().RunWithEnvironment("hello", env);
+
+/*
+		std::shared_ptr<LuaState> L = ctx().newStateFor("hello");
+		LuaTString name("");
+		name.PushGlobal(*L, "name");
+
+		int res = lua_pcall(*L, 0, LUA_MULTRET, 0);
+		if (res != LUA_OK ) {
+			L->PrintStack(std::cout);
+			throw std::runtime_error(lua_tostring(*L,1));
+		}
+
+		name.PopGlobal(*L);
+
+*/
+		sstr << "<h1>Hello " << name->ToString() << "!</h1>";
 		
 		sstr << "</body>";
 		sstr << "</html>";
@@ -63,10 +74,17 @@ public:
 
 		}
 	}
+	
+	static LuaContext &ctx() {
+		static LuaContext _ctx;
+		return _ctx;
+	}
 
 	std::unique_ptr<Middleware> New() const override {
+		ctx().CompileString("hello", "name=\"Marisa from Lua Yumemi, it's \" .. os.date()");
 		return std::make_unique<hello_world>();
 	}
+
 };
 
 
